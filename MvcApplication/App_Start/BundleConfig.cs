@@ -3,6 +3,11 @@ using System.Web.Optimization;
 
 namespace MvcApplication
 {
+    public static class BundleNames
+    {
+        public static string FileUpload = "~/Scripts/FileUpload/file";
+    }
+
     public class BundleConfig
     {
         // For more information on Bundling, visit http://go.microsoft.com/fwlink/?LinkId=254725
@@ -38,6 +43,10 @@ namespace MvcApplication
                         "~/Content/themes/base/jquery.ui.datepicker.css",
                         "~/Content/themes/base/jquery.ui.progressbar.css",
                         "~/Content/themes/base/jquery.ui.theme.css"));
+
+            bundles.Add(new ScriptBundle(BundleNames.FileUpload)
+              .Include("~/Scripts/FileUpload/file.js")
+              );
         }
     }
 }

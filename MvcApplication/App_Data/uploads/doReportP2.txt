@@ -1,0 +1,335 @@
+DECLARE 
+  v_ReportType number(10);
+  v_DictionaryStatus number(19);
+  v_DictionaryRunType number(19);
+  v_DictionaryCloseReason number(19);
+  v_DateStamp date;
+  v_LastDate date;
+BEGIN
+  select TRUNC(CURRENT_DATE - INTERVAL '2' HOUR) into v_DateStamp from dual;
+  select NVL(MAX(TRUNC("CreateDate")), to_date('20000101','YYYYMMDD')) into v_LastDate from "doReportP2Data";
+
+  IF (v_LastDate < v_DateStamp) THEN
+  
+    select st.ID into v_ReportType from "doSysTypes" st where st."Value" = 'SoftwareMind.ReportP2Data' ;
+    select d."ID" into v_DictionaryStatus from "doDictionary" d where d."Alias" = 'PROCESS_STATUS';
+    select d."ID" into v_DictionaryRunType from "doDictionary" d where d."Alias" = 'PROCESS_RUN_TYPES';
+    select d."ID" into v_DictionaryCloseReason from "doDictionary" d where d."Alias" = 'AUTO_CLOSE_REASON';
+  
+    INSERT INTO 
+    "doReportP2Data" 
+    (
+    "ID",
+    "TypeID",
+    "VersionID",
+    "CreateDate",
+    "ProcessID",
+    "CustomerName",
+    "CustomerNumber",
+    "CustomerKind",
+    "Branch",
+    "BranchNumber",
+    "LeadBranch",
+    "LeadBranchNumber",
+    "AdvisorUnit",
+    "AdvisorUnitName",
+    "AdvisorCode",
+    "BusinessLine",
+    "BusinessLineCode",
+    "GRM",
+    "AdvisorName",
+    "Advisor",
+    "ABName",
+    "LOO",
+    "LOOGroup",
+    "ChargeAmountPLN",
+	"ChargePeriod",
+	"RatingReviewDate",
+    "KindIAS",
+    "ReserveIAS",
+    "KindMF",
+	"ReserveMF",
+    "RatingAMOR",
+	"RatingBMSAMOR",
+    "ModelFMSAMOR",
+    "RatingFOR",
+	"RatingBMSFOR",
+	"ModelFMSFOR",
+	"Strategy",
+    "OpenProcessesCount",
+    "OpenProcessesWeight",
+    "ClosedProcessesCount",
+    "ClosedProcessesWeight",
+    "ProcessKind",
+    "ProcessNumber",
+	"ProcNumber",
+    "StartDate",
+    "StdWeight",
+    "Weight",
+    "Duration",
+    "FirstActivityDate",
+    "Owner",
+    "TaskOwner",
+    "Status",
+    "DPStatus",
+    --"LifeState"                 ,
+    "AutoWakeUpDate",
+    "LastActivityDate",
+    "RunType",
+    "CloseDate",
+    
+    "MTurnover",
+    "MTurnPercent",
+    "QTurnover",
+    "QTurnPercent",
+    "HTurnover",
+    "HTurnPercent",
+    "YTurnover",
+    "YTurnPercent",
+    "MTurnLast",
+    "MTurnLast1",
+    "MTurnLast2",
+    "QTurnLast",
+    "HTurnLast",
+    "YTurnLast",
+    "ITurnLast",
+    "FirstCheckOn",
+    "Product",
+    "ProductTypeName",
+    "InterestDebit",
+    "UpdateOn",
+    "RiskNotifOn",
+    "Amount",
+    "Currency",
+    "TurnoverType",
+    "MonitoringFreq",
+    "Suffixes",
+    "LimitPercent",
+    "LimitProduct",
+    "LimitProductTypeName",
+    "SalePercent",
+    "IncomePLN",
+    "ChargeOnStartPeriodPLN",
+    "ChargeOnEndPeriodPLN",
+    "PeriodIncome",
+    "VatValue",
+    "IncomeGrossPLN",
+    "SanctionType",
+    "SanctionTypeComment",
+    "SystemBehavior",
+    "SanctionUsed",
+    "SanctionUsedComment",
+    "AdvisorCommentDateNTLast",
+    "RecoveryDateNTLast",
+    "AdvisorCommentNTLast",
+    "VeryfierCommentDateNTLast",
+    "VeryfierCommentNTLast",
+    "AdvisorCommentDateLast",
+    "RecoveryDateLast",
+    "AdvisorCommentLast",
+    "VeryfierCommentDateLast",
+    "VeryfierCommentLast",
+    "DDiKKNote",
+    "DDiKKNoteDate",
+    "DorkNote",
+    "DorkNoteDate",
+	"SummaryNote",
+    "SummaryNoteDate",
+    "RunReason",
+    "CloseReason",
+    "ClosedBy",
+    "ProdTypeDetails"
+    )
+    select
+    ("SEQ-doDataObject".nextval * 2048) + (v_ReportType*2) + 1,
+    v_ReportType,
+    1,
+    v_DateStamp,
+    p."ID",
+    c."Name",
+    c."Number",
+    c."Kind",
+    branch."Name",
+    c."Branch",
+    case when branch."ParentUnits" = 'BIZ' then branch."Name" else (select org."Name" from "doOrgUnit" org where org."Number" = branch."ParentUnits") end,
+    case when branch."ParentUnits" = 'BIZ' then c."Branch" else branch."ParentUnits" end,
+    c."AdvisorUnit",
+    advunit."Name",
+    advisor."Mnemonic",
+    bl."ID",
+    bl."Code",
+    c."GRM",
+    advisor."Desc",
+    advisor."Advisor",
+    (select "Desc" from "doAnalystCode" where "Mnemonic" = c."AnalystCode"),
+    c."LOO",
+    c."LOOGroup",
+    c."ChargeAmountPLN",
+    case when c."ChargeDate" = to_date('00010102','YYYYMMDD') then 1000000 else nvl(trunc(v_DateStamp - c."ChargeDate"), 0) end,
+	c."RatingReviewDate",
+    c."KindIAS",
+    c."ReserveIAS",
+    c."KindMF",
+	c."ReserveMF",
+    c."RatingAMOR",
+	c."RatingBMSAMOR",
+    c."ModelFMSAMOR",
+	c."RatingFOR",
+    c."RatingBMSFOR",
+	c."ModelFMSFOR",
+	c."Strategy",
+    --case when c."ChargeDate" is not null then TRUNC(v_DateStamp - c."ChargeDate") else 0 end,
+    c."OpenProcessesCount",
+    c."OpenProcessesWeight",
+    c."ClosedProcessesCount",
+    c."ClosedProcessesWeight",
+    p."Definition",
+    def."Number",
+	p."Number",
+    p."StartDate",
+    def."Weight",
+    p."Weight",
+    case when p."CloseDate" is null then TRUNC(v_DateStamp - trunc(p."StartDate")) else TRUNC(trunc(p."CloseDate") - trunc(p."StartDate")) end,
+    p."FirstActivityDate",
+    p."Owner",
+    p."TaskOwner",
+    distat."ID",
+    distat."Alias",
+    --p."LifeState",
+    p."AutoWakeUpDate",
+    p."LastActivityDate",
+    dirun."ID",
+    p."CloseDate",
+
+    (select "Credit" from (select t."Credit", t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'M%') where "Customer" = p."CustomerObj" and r=1), --	'MTurnover',
+    (select -round(val, 2) from (select t."CreditDrop" / NULLIF(t."Credit" + t."CreditDrop", 0)*100 val, t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'M%') where "Customer" = p."CustomerObj" and r=1), --	'MTurnPercent',--tunvoers.Credit / (tunvoers.Credit + tunvoers.CreditDrop) * 100;
+    (select "Credit" from (select t."Credit", t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'Q%') where "Customer" = p."CustomerObj" and r=1), --	'QTurnover',
+    (select -round(val, 2) from (select t."CreditDrop" / NULLIF(t."Credit" + t."CreditDrop", 0)*100 val, t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'Q%') where "Customer" = p."CustomerObj" and r=1), --	'QTurnPercent',
+    (select "Credit" from (select t."Credit", t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'S%') where "Customer" = p."CustomerObj" and r=1), --	'HTurnover',
+    (select -round(val, 2) from (select t."CreditDrop" / NULLIF(t."Credit" + t."CreditDrop", 0)*100 val, t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'S%') where "Customer" = p."CustomerObj" and r=1), --	'HTurnPercent',
+    (select "Credit" from (select t."Credit", t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" = 'Y') where "Customer" = p."CustomerObj" and r=1), --	'YTurnover',
+    (select -round(val, 2) from (select t."CreditDrop" / NULLIF(t."Credit" + t."CreditDrop", 0)*100 val, t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'Y%') where "Customer" = p."CustomerObj" and r=1), --	'YTurnPercent',
+    (select "Credit" from (select t."Credit", t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'M%') where "Customer" = p."CustomerObj" and r=2), --	'MTurnLast',
+    (select "Credit" from (select t."Credit", t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'M%') where "Customer" = p."CustomerObj" and r=3), --	'MTurnLast1',
+    (select "Credit" from (select t."Credit", t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'M%') where "Customer" = p."CustomerObj" and r=4), --	'MTurnLast2',
+    (select "Credit" from (select t."Credit", t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'Q%') where "Customer" = p."CustomerObj" and r=2), --	'QTurnLast',
+    (select "Credit" from (select t."Credit", t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'S%') where "Customer" = p."CustomerObj" and r=2), --	'HTurnLast',
+    (select "Credit" from (select t."Credit", t."Period", t."Customer", ROW_NUMBER() over (partition by t."Customer" order by t."Year" desc, t."Period" desc) r from "doTurnover" t where t."Period" like 'Y%') where "Customer" = p."CustomerObj" and r=2), --	'YTurnLast',
+    case when cov."Suffixes" is not null and cov."ValuesMeaning" = 'TRV' then
+        (case when periodType."Alias" = 'Q' then cov."Value1" || ', ' || cov."Value2" || ', ' || cov."Value3" || ', ' || cov."Value4"
+            when periodType."Alias" = 'S' then cov."Value1" || ', ' || cov."Value2" 
+            else to_char(cov."Value1") end) else null end, --	'ITurnLast',
+    cov."FirstCheckOn", --	'FirstCheckOn',
+    cov."Product", --	'Product',
+    (select "Name" from "doProductType" where "doProductType"."ID" = (select "ProductType" from "doProduct" where "ID" = cov."Product")), --	'ProductTypeName',
+    (select "InterestDebit" from "doProduct" where "ID" = cov."Product"), --	'InterestDebit',
+    cov."UpdateOn", --	'UpdateOn',
+    cov."RiskNotifOn", --	'RiskNotifOn',
+    case when cov."ValuesMeaning" = 'TRV' then 
+      (case when periodType."Alias" = 'Q' then cov."Value1" || ', ' || cov."Value2" || ', ' || cov."Value3" || ', ' || cov."Value4"
+            when periodType."Alias" = 'S' then cov."Value1" || ', ' || cov."Value2" 
+            else to_char(cov."Value1") end) else null end, --	'Amount',
+    cov."Currency", --	'Currency',
+    cov."TurnoverType", --	'TurnoverType',
+    cov."MonitoringFreq", --	'MonitoringFreq',
+    cov."Suffixes", --	'Suffixes',
+    case when cov."ValuesMeaning" = 'LMT' then 
+      (case when periodType."Alias" = 'Q' then cov."Value1" || ', ' || cov."Value2" || ', ' || cov."Value3" || ', ' || cov."Value4"
+            when periodType."Alias" = 'S' then cov."Value1" || ', ' || cov."Value2" 
+            else to_char(cov."Value1") end) else null end, --	'LimitPercent',
+    cov."LimitProduct", --	'LimitProduct',
+    (select "Name" from "doProductType" where "doProductType"."ID" = (select "ProductType" from "doProduct" where "ID" = cov."LimitProduct")), --	'LimitProductTypeName',
+    case when cov."ValuesMeaning" = 'SLS' then 
+      (case when periodType."Alias" = 'Q' then cov."Value1" || ', ' || cov."Value2" || ', ' || cov."Value3" || ', ' || cov."Value4"
+            when periodType."Alias" = 'S' then cov."Value1" || ', ' || cov."Value2" 
+            else to_char(cov."Value1") end) else null end, --	'SalePercent',
+    income."IncomePLN", --	'IncomePLN',
+    income."ChargeOnStartPeriodPLN", --	'ChargeOnStartPeriodPLN',
+    income."ChargeOnEndPeriodPLN", --	'ChargeOnEndPeriodPLN',
+    ((select "Name" from "doPeriod" where "ID" = income."PeriodIncome") || ' ' || income."PeriodIncomeYear"), --	'PeriodIncome',
+    income."VatValue", --	'VatValue',
+    income."CorrectedCharge", --	'IncomeGrossPLN', to jest poprawne!
+    cov."SanctionType", --	'SanctionType',
+    cov."SanctionTypeComment", --	'SanctionTypeComment',
+    cov."SystemBehavior", --	'SystemBehavior',
+    cov."SanctionUsed", --	'SanctionUsed',
+    cov."SanctionUsedComment", --	'SanctionUsedComment',
+    ntlastAdvCmnt."Date", --	'AdvisorCommentDateNTLast',
+    case when ntlastRecoveryDate."ID" is not null then ( case when length(ntlastRecoveryDate."Info") = 24 then to_date(substr(ntlastRecoveryDate."Info", 15, 10), 'DD-MM-YYYY') else to_date(substr(ntlastRecoveryDate."Info", 14, 10), 'DD-MM-YYYY') end ) else null end, --	'RecoveryDateNTLast',
+    ntlastAdvCmnt."Info", --	'AdvisorCommentNTLast',
+    ntlastVerifierCmnt."Date", --	'VeryfierCommentDateNTLast',
+    ntlastVerifierCmnt."Info", --	'VeryfierCommentNTLast',
+    p."OwnerNoteDate", --	'AdvisorCommentDateLast',
+    p."CustomerRecoveryDate", --	'RecoveryDateLast',
+    p."OwnerNote", --	'AdvisorCommentLast',
+    p."SupervisorNoteDate", --	'VeryfierCommentDateLast',
+    p."SupervisorNote", --	'VeryfierCommentLast',
+    p."DDiKKNote", --	'DDiKKNote',
+    p."DDiKKNoteDate", --	'DDiKKNoteDate',
+    p."DorkNote", --	'DorkNote',
+    p."DorkNoteDate", --	'DorkNoteDate',
+    p."SummaryNote",
+    p."SummaryNoteDate",
+    p."RunReason",
+    case when p."LifeState" != 'Z' then null
+         when p."CReason" > 0 then p."CReason" 
+         when p."EndedByConnector" like 'DataFiled' then (select "ID" from "doDI" where "Dictionary" = v_DictionaryCloseReason and "Alias" like 'wypelnienie_danych')
+         when p."EndedByConnector" not like 'Close' or p."EndedByConnector" is null then (select "ID" from "doDI" where "Dictionary" = v_DictionaryCloseReason and "Alias" like 'reczne')
+         else (select "ID" from "doDI" where "Dictionary" = v_DictionaryCloseReason and "Alias" like decode((select "Stage" from "doProcDefStep" where "Code" = p."LastUserStep"), 'H', 'weryfikator', 'J', 'ddikk', 'M', 'dork',  'U', 'zdk')) end,
+    case when p."LifeState" = 'Z' and p."CReason" = 0 then p."InitBy" else null end, --"ClosedBy",
+    (select "Promotions" from "doProduct" where "ID" = cov."Product") --"ProdTypeDetails"
+    from
+    "doProcess2-View" p inner join
+    "doCustomer-View" c on (p."CustomerObj" = c."ID") left outer join
+    "doOrgUnit" branch on (c."Branch" = branch."Number") left outer join
+    "doAdvisorCode" advisor on (c."AdvisorCode" = advisor."Mnemonic") left outer join
+    "doOrgUnit" advunit on (c."AdvisorUnit" = advunit."Number") inner join
+    "doProcessDef" def on (p."Definition" = def."ID") left outer join
+    "doBusinessLine" bl on (c."BusinessLine" = bl."Code") left outer join
+    "doDI" distat on (distat."Alias" = p."Status" and distat."Dictionary" = v_DictionaryStatus) left outer join
+    "doDI" dirun on (dirun."Alias" = p."RunType" and dirun."Dictionary" = v_DictionaryRunType) left outer join
+    "doCovenant" cov on p."Context" = cov."ID" left outer join
+    "doPeriodType" periodType on (periodType."ID" = cov."TurnoverType") left outer join
+    "doSalesIncome" income on income."Customer" = P."CustomerObj" 
+        and periodType."ID" = income."PeriodTypeIncome" 
+        and cov."ValuesMeaning" = 'SLS' 
+        and income."PeriodIncomeYear" = (case when TO_CHAR(p."CreateDate", 'Q') = 1 or (TO_CHAR(p."CreateDate", 'Q') = 2 and periodType."Alias" = 'S') or periodType."Alias" = 'Y' 
+                                              then TO_NUMBER(TO_CHAR(p."CreateDate", 'YYYY'))-1 
+                                              else TO_NUMBER(TO_CHAR(p."CreateDate", 'YYYY')) end)
+        and (select SUBSTR("Alias", 3, 1) from "doPeriod" where "ID" = income."PeriodIncome") = (case when periodType."Alias" = 'Q' and TO_CHAR(p."CreateDate", 'Q') = 1 then 4
+                      when periodType."Alias" = 'Q' then TO_CHAR(p."CreateDate", 'Q')-1
+                      when periodType."Alias" = 'S' and TO_CHAR(p."CreateDate", 'Q') > 2 then 1
+                      when periodType."Alias" = 'S' then 2
+                      else 0 end ) left outer join 
+    ( -- next to last advisor comment/date
+    select "ID", "Date", "Info" from
+      ( select j."EntityKey" "ID", j."When" "Date", j."Info", rank() over (partition by j."EntityKey" order by j."When" desc) rank
+      from "doJournal" j, "doProcess" p where p."ID" = j."EntityKey" and j."Category" = 'N' and j."Element" = 'N2.1'
+      ) where rank = 2
+    ) ntlastAdvCmnt on ntlastAdvCmnt."ID" = p."ID"
+    left outer join
+    ( -- next to last Verifier comment/date
+    select "ID", "Date", "Info" from
+      ( select j."EntityKey" "ID", j."When" "Date", j."Info", rank() over (partition by j."EntityKey" order by j."When" desc) rank
+      from "doJournal" j, "doProcess" p where p."ID" = j."EntityKey" and j."Category" = 'N' and j."Element" = 'N2.3'
+      ) where rank = 2
+    ) ntlastVerifierCmnt on ntlastVerifierCmnt."ID" = p."ID" 
+    left outer join
+    ( -- next to last recovery date
+    select "ID", "Date", "Info" from 
+      ( select j."EntityKey" "ID", j."When" "Date", j."Info", rank() over (partition by j."EntityKey" order by j."When" desc) rank
+      from "doJournal" j, "doProcess" p where p."ID" = j."EntityKey" and (j."Element" = 'Data poprawy' or j."Element" = 'Przewidywana data poprawy sytuacji Klienta')
+      ) where rank = 2
+    ) ntlastRecoveryDate on ntlastRecoveryDate."ID" = p."ID"
+
+    where 
+    p."IsX" = 0; 
+    
+    commit;
+    
+    -- usuniecie danych starszych niz 3 lata
+    delete "doReportP2Data" where "CreateDate" < (CURRENT_DATE - (365 * 3));
+    commit;
+
+  END IF;
+END;

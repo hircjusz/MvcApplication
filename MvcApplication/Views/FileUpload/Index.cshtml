@@ -1,0 +1,62 @@
+﻿@using MvcApplication
+@model dynamic
+
+@{
+    ViewBag.Title = "title";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+@section scripts{
+    @Scripts.Render(BundleNames.FileUpload)
+}
+
+<div>
+
+    <div>
+        <h1>Upload File</h1>
+    </div>
+
+
+    @using (Html.BeginForm("Upload", "FileUpload", FormMethod.Post,
+    new
+    {
+        enctype = "multipart/form-data",
+        id = "ImgForm",
+        name = "ImgForm",
+        target = "UploadTarget"
+    }))
+    {
+        
+@* DataBase Record ID as Hidden Field against which we are uplaoding file  *@
+         
+        @Html.Hidden("ID", 65512)
+        <div style="width: 100px; margin: auto; float: left; line-height: 30px; font-weight: bold;">File</div>
+     
+         
+        <div style="width: 200px; float: left; margin: auto;">
+
+            <input type="file" id="uploadFile" name="file" data-val="true" data-val-required="please select a file" />
+            <span id="validityMessages" style="color: Red;"></span>
+        </div>
+
+         
+        <div style="clear: both;"></div>
+     
+        <div style="width: auto; margin-top: 3%;">
+            <div style="margin: 5% 18%;">
+                <input id="upload" type="button" value="Upload" name="Upload" />
+                <span id="uploadLoader" style="display: none;">
+                    <img id="searchLoader" src="@Url.Content("~/Content/Images/loader.gif")" />Uploading Please Wait</span>
+            </div>
+        </div>
+           
+     
+    }
+    <div id="uploadsContainer"></div>
+      <iframe id="UploadTarget" name="UploadTarget" style="position: absolute; left: -999em; top: -999em;" data-action-url="@Url.Action("GetFiles")"></iframe>
+   
+</div>
+
+
+
+<h2>title</h2>

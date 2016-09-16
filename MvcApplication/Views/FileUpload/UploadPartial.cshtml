@@ -1,0 +1,46 @@
+﻿@model List<MvcApplication.Models.FileModel>
+@{
+    Layout = null;
+    var IsAnyImage = Model.Any(x => new String[] { "jpg", "jpeg", "png", "gif" }.Contains(x.FileName.Split('.').Last()));
+
+}
+
+
+@if (Model.Any())
+{
+    <h3>Uploads</h3>
+    <hr />
+    <table style="width: 500px;">
+        <tr>
+            @if (IsAnyImage)
+            {
+                <th>Thumbnail</th>
+            }
+            <th>FileName</th>
+            <th>Action</th>
+        </tr>
+        <tbody>
+            @for(int i=0; i< Model.Count; i++)
+            {
+                <tr>
+
+                    
+                        <td style="text-align: center;">
+                            <img width="60" src="@Url.Content(Model[i].FilePath)" />
+
+                        </td>
+
+                    <td style="text-align: center;">
+                        <a href="@Url.Content("~/Uploads/" + Model[i].FileName)" target="_blank">@Model[i].FileName</a></td>
+                    <td style="text-align: center;">
+                        <img id="@Model[i].FileID" class="delUpload" width="20" src="@Url.Content("~/Content/Images/delete.png")" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}
+else
+{
+    <h3>No Uploads Found!</h3>
+}
