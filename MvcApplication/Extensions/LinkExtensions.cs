@@ -19,7 +19,9 @@ namespace MvcApplication.Extensions
                 return MvcHtmlString.Create("Action Authorized");
             }
 
-            return MvcHtmlString.Create("Hello Darek");
+            return MvcHtmlString.Create("Hello Darek");   
+
+
         }
 
     }
